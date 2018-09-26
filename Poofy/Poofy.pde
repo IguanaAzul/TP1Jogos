@@ -2,15 +2,15 @@ import processing.sound.*;
 Drop[] drops = new Drop[200];
 PImage Nuvem, Chuva, Mar, Barco, Raio;
 float xC=0, xN=0, xM=0, vC = -10, vN = -1, vM=-3, yM=450, vyM = -1, xB=0, yB=450, vxB=0, k=0;
-SoundFile tomate, rain, thunder;
+SoundFile rain, thunder, musica;
 void setup(){
   size (1280, 720);
   
-  tomate = new SoundFile(this, "Tomate.mp3");
+  musica = new SoundFile(this, "Musica.mp3");
   rain = new SoundFile(this, "Rain.mp3");
   thunder = new SoundFile(this, "Thunder.mp3");
   
-  //musica.loop();
+  musica.loop();
   rain.loop();
   
   Raio = loadImage("Raio Poofy.png");

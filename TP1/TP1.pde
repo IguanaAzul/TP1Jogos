@@ -4,7 +4,7 @@ PImage Nuvem, Chuva, Mar, Barco, Raio, Bola;
 PImage[] Botoes = new PImage[10];
 float xC=0, vC = -10; 
 float xN=0, vN = -1;
-float xM=0, vxM=-2, yM=445, vyM=-1; 
+float xM=0, vxM=-2, yM=445, vyM=-1, vMaxB=3;
 float xM1=-50,yM1=405, vyM1=2, vxM1=3;
 float xM2=-70, yM2=330, vyM2=-3, vxM2=4;
 float xB=0, yB=450, vxB=0;
@@ -12,9 +12,10 @@ float xBI=1600, yBI=450,  vxBI=-2;
 float k=0, s=0, es=10;
 float tempoatual=0, tempoanterior=0;
 int selecao=1;
-boolean JOGAR=false, MENU=true, PAUSE=true, COLLIDERS=false, VITORIA=false, DERROTA=false;
+boolean JOGAR=false, MENU=true, PAUSE=true, COLLIDERS=false, VITORIA=false, DERROTA=false, JUST=false;
 int shootDelay=100, enemyShootDelay=100;
 float xTiro, yTiro, xTiroInimigo, yTiroInimigo;
+float forcaTiro=1, forcaTiroInimigo=1;
 float vxTiro=12, vyTiro=0, vxTiroInimigo=-12, vyTiroInimigo=0, vyInicialTiro=-12, vyInicialTiroInimigo=-12, vxInicialTiroInimigo=-12, vxInicialTiro=12;
 float temp;
 boolean startingShoot=true, startingEnemyShoot=true, shooting=false, enemyShooting=false;
@@ -29,6 +30,7 @@ void setup(){
   rain = new SoundFile(this, "Rain.mp3");
   thunder = new SoundFile(this, "Thunder.mp3");
   rain.loop();
+  
   for (int i = 0; i < Botoes.length; i++) {
       Botoes[i] = new PImage();
   }
@@ -52,12 +54,13 @@ void setup(){
 }
 
 void keyReleased(){
+  if(MENU){
     if((key == 's' || key == 'S') && selecao<3) selecao++;
     if((key == 'w' || key == 'W') && selecao>1) selecao--;
-    if(key==ENTER && MENU){
+    if(key==ENTER){
       switch(selecao){
         case 1:
-        JOGAR=true; MENU=false; PAUSE=false;
+        JOGAR=true; MENU=false; PAUSE=false; selecao=0;
         break;
         case 3:
         case 4:
@@ -66,9 +69,57 @@ void keyReleased(){
         default: break;
       }
     }
-    if(key=='p' && JOGAR) PAUSE=!PAUSE;
+  }
+  if(JOGAR){
+    if(key=='p') {PAUSE=!PAUSE; selecao=1;}
     if(key=='c') COLLIDERS=!COLLIDERS;
-    if(key=='m') {MENU=true; JOGAR=false;}
+    if(key=='m') {MENU=true; JOGAR=false; selecao=1;}
+  }
+  if(PAUSE){
+    if((key == 's' || key == 'S') && selecao<6) selecao++;
+    if((key == 'w' || key == 'W') && selecao>1) selecao--;
+    if(key==ENTER){
+      switch(selecao){
+        case 1:
+          if(coins>=50){
+            temp = vida/vidaMax;
+            vidaMax+=3;
+            vida=temp*vidaMax;
+            coins-=50;
+          }
+        break;
+        case 2:
+           if(coins>=60){
+            shootDelay-=30;
+            coins-=60;
+           }
+        break;
+        case 3:
+        if(coins>=40){
+          vxInicialTiro+=1;
+          if(vyInicialTiro>7) vyInicialTiro--;
+          coins-=40;
+        }
+        break;
+        case 4:
+        if(coins>=35){
+          vMaxB++;
+          coins-=35;
+        }
+        break;
+        case 5:
+        if(coins>=50){
+          forcaTiro++;
+          coins-=50;
+        }
+        break;
+        case 6:
+          PAUSE=false;
+        break;
+        default: break;
+      }
+    }
+  }
 }
 void shoot(){
   if(startingShoot){
@@ -119,9 +170,10 @@ void enemyShoot(){
   }
 }
 void colisoes(){
-  if(shooting) if(xTiro+40>xBI-180 && xTiro<xBI && yTiro+40>yBI+75 && yTiro<yBI+130) {vidaInimigo--; shooting=false; startingShoot=true;}
-  if(enemyShooting) if(xTiroInimigo+40>xB && xTiroInimigo<xB+180 && yTiroInimigo+40>yB+75 && yTiroInimigo<yB+130) {vida--; enemyShooting=false; startingEnemyShoot=true;}
-  
+  if(shooting) if(xTiro+40>xBI-180 && xTiro<xBI && yTiro+40>yBI+75 && yTiro<yBI+130) {vidaInimigo-=forcaTiro; shooting=false; startingShoot=true;}
+  if(enemyShooting) if(xTiroInimigo+40>xB && xTiroInimigo<xB+180 && yTiroInimigo+40>yB+75 && yTiroInimigo<yB+130) {vida-=forcaTiroInimigo; enemyShooting=false; startingEnemyShoot=true;}
+  if(vidaInimigo<=0) {VITORIA=true; JUST=true;}
+  if(vida<=0) {DERROTA=true; JUST=true;}
   //if(xTiro+40>xB && xTiro<xB+180 && yTiro+40>yB+75 && yTiro<yB+130) {vida--; shooting=false; startingShoot=true;}
   //if(xTiroInimigo+40>xBI-180 && xTiroInimigo<xBI && yTiroInimigo+40>yBI+75 && yTiroInimigo<yBI+130) {vidaInimigo--; enemyShooting=false; startingEnemyShoot=true;}
   
@@ -135,10 +187,10 @@ void posiciona(){
       for(int i=0; i<drops.length; i++)drops[i].fall();
       if (keyPressed) {
           if (key == 'D' || key == 'd') {
-            if(vxB<3){vxB+=0.1;}
+            if(vxB<vMaxB){vxB+=0.1;}
           }
           if (key == 'A' || key == 'a') {
-            if(vxB>-3){vxB-=0.1;}
+            if(vxB>-vMaxB){vxB-=0.1;}
           }
       }
 
@@ -163,13 +215,33 @@ void desenha(){
   background(150, 255, 255);
   if(VITORIA){
     JOGAR=false;
-    coins+=100;
     background(100, 250, 100);
+    textSize(30);
+    fill(255, 0, 0);
+    text("Você Venceu!!!!!\nPressione enter para ir para a próxima fase.", width/2-250, height/2);
+    if(JUST){
+      coins+=100;
+      vxInicialTiroInimigo-=0.5;
+      if(vyInicialTiroInimigo>8) vyInicialTiroInimigo+=0.5;
+      xB=0;
+      vida=vidaMax;
+      JUST=false;
+      vidaInimigoMax+=1;
+      vidaInimigo=vidaInimigoMax;
+      shooting=false; startingShoot=true;
+      forcaTiroInimigo++;
+      enemyShooting=false; startingEnemyShoot=true;
+    }
+    if(keyPressed){if(key==ENTER) {VITORIA=false; JOGAR=true;}}
   }
   if(DERROTA){
     JOGAR=false;
     coins=0;
     background(250, 100, 100);
+    textSize(30);
+    fill(100, 0, 255);
+    text("Você PERDEU!!!!! HAHAHAHHAHA\nPressione enter para FECHAR O JOGO.\nnoob", width/2-250, height/2);
+    if(keyPressed){if(key==ENTER) {exit();}}
   }
   if(JOGAR){
     background(150,150,150);
@@ -205,9 +277,9 @@ void desenha(){
     
     fill(255-255*(vidaInimigo/vidaInimigoMax), 0+255*(vidaInimigo/vidaInimigoMax), 50);
     rect(xBI-190, yBI-10, 190*vidaInimigo/vidaInimigoMax, 10);
-    String s = "Para voltar ao menu pressione M\nPara pausar e ver opções de upgrade pressione P\nCoins " + coins;
-    fill(50, 170, 30);  
-    textSize(20);
+    String s = "Pressione A e D para mover-se\nPara voltar ao menu pressione M\nPara pausar e ver opções de upgrade pressione P\nCoins " + coins;
+    fill(50, 250, 30);  
+    textSize(17);
     text(s, 1, 1, 1000, 1000);
     if(COLLIDERS){
       stroke(0,0,255);
@@ -222,6 +294,34 @@ void desenha(){
       ellipse(xBI-180, yBI+130, 5, 5);
       ellipse(xBI-180, yBI+75, 5, 5);
     }
+  }
+  if(PAUSE){
+    String s1 = "Aumentar vida máxima: 50 moedas";
+    String s2 = "Aumentar frequencia de tiros: 60 moedas";
+    String s3 = "Aumentar velocidade do tiro: 40 moedas";
+    String s4 = "Aumentar velocidade do barco: 35 moedas";
+    String s5 = "Aumentar força do tiro: 50 moedas";
+    String s6 = "Voltar para o jogo";
+    fill(250, 250, 30);
+    textSize(17);
+    if(selecao==1) fill(255);
+    text(s1, width/2-200, 140, 1000, 1000);
+    fill(250, 250, 30);
+    if(selecao==2) fill(255);
+    text(s2, width/2-200, 190, 1000, 1000);
+    fill(250, 250, 30);
+    if(selecao==3) fill(255);
+    text(s3, width/2-200, 240, 1000, 1000);
+    fill(250, 250, 30);
+    if(selecao==4) fill(255);
+    text(s4, width/2-200, 290, 1000, 1000);
+    fill(250, 250, 30);
+    if(selecao==5) fill(255);
+    text(s5, width/2-200, 340, 1000, 1000);
+    fill(250, 250, 30);
+    if(selecao==6) fill(255);
+    text(s6, width/2-200, 390, 1000, 1000);
+    fill(250, 250, 30);
   }
   if(MENU){
       pushMatrix();

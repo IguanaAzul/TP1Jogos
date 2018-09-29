@@ -9,16 +9,18 @@ float xM1=-50,yM1=405, vyM1=2, vxM1=3;
 float xM2=-70, yM2=330, vyM2=-3, vxM2=4;
 float xB=0, yB=450, vxB=0;
 float xBI=1600, yBI=450,  vxBI=-2;
-float k=0, s=0, es=40;
+float k=0, s=0, es=10;
 float tempoatual=0, tempoanterior=0;
 int selecao=1;
 boolean JOGAR=false, MENU=true, PAUSE=true, COLLIDERS=false, VITORIA=false, DERROTA=false;
 int shootDelay=100, enemyShootDelay=100;
 float xTiro, yTiro, xTiroInimigo, yTiroInimigo;
-float vxTiro=12, vyTiro=0, vxTiroInimigo=-12, vyTiroInimigo=0, vyInicialTiro=-12, vyInicialTiroInimigo=-12;
+float vxTiro=12, vyTiro=0, vxTiroInimigo=-12, vyTiroInimigo=0, vyInicialTiro=-12, vyInicialTiroInimigo=-12, vxInicialTiroInimigo=-12, vxInicialTiro=12;
+float temp;
 boolean startingShoot=true, startingEnemyShoot=true, shooting=false, enemyShooting=false;
 float vida, vidaInimigo;
 float vidaMax=10, vidaInimigoMax=10;
+int coins = 100;
 SoundFile tomate, rain, thunder;
 void setup(){
   frameRate(60);
@@ -64,14 +66,16 @@ void keyReleased(){
         default: break;
       }
     }
-    if(key=='p') PAUSE=!PAUSE;
+    if(key=='p' && JOGAR) PAUSE=!PAUSE;
     if(key=='c') COLLIDERS=!COLLIDERS;
+    if(key=='m') {MENU=true; JOGAR=false;}
 }
 void shoot(){
   if(startingShoot){
     xTiro=xB+50;
     yTiro=yB+50;
     vyTiro=vyInicialTiro;
+    vxTiro=vxInicialTiro;
     startingShoot=false;
   }
   pushMatrix();
@@ -79,20 +83,23 @@ void shoot(){
     scale(0.15, 0.15);
     image(Bola, 0, 0);
   popMatrix();
-  xTiro+=vxTiro;
-  yTiro+=vyTiro;
-  vyTiro+=0.3;
-  if(xTiro>width || yTiro>height){
-   shooting=false;
-   startingShoot=true;
+  if(!PAUSE){
+    xTiro+=vxTiro;
+    yTiro+=vyTiro;
+    vyTiro+=0.3;
+    if(xTiro>width || yTiro>height){
+     shooting=false;
+     startingShoot=true;
+    }
+    
   }
-  if(xTiro+40>xBI-180 && xTiro<xBI && yTiro+40>yBI+75 && yTiro<yBI+130) {vidaInimigo--; shooting=false; startingShoot=true;}
 }
 void enemyShoot(){
    if(startingEnemyShoot){
     xTiroInimigo=xBI-75;
     yTiroInimigo=yBI+50;
     vyTiroInimigo=vyInicialTiroInimigo;
+    vxTiroInimigo=vxInicialTiroInimigo;
     startingEnemyShoot=false;
   }
   pushMatrix();
@@ -100,14 +107,25 @@ void enemyShoot(){
     scale(0.15, 0.15);
     image(Bola, 0, 0);
   popMatrix();
-  xTiroInimigo+=vxTiroInimigo;
-  yTiroInimigo+=vyTiroInimigo;
-  vyTiroInimigo+=0.3;
-  if(xTiroInimigo>width || yTiroInimigo>height){
-   enemyShooting=false;
-   startingEnemyShoot=true;
+  if(!PAUSE){
+    xTiroInimigo+=vxTiroInimigo;
+    yTiroInimigo+=vyTiroInimigo;
+    vyTiroInimigo+=0.3;
+    if(xTiroInimigo>width || yTiroInimigo>height){
+     enemyShooting=false;
+     startingEnemyShoot=true;
+    }
+    
   }
-  if(xTiroInimigo+40>xB && xTiroInimigo<xB+180 && yTiroInimigo+40>yB+75 && yTiroInimigo<yB+130) {vida--; enemyShooting=false; startingEnemyShoot=true;}
+}
+void colisoes(){
+  if(shooting) if(xTiro+40>xBI-180 && xTiro<xBI && yTiro+40>yBI+75 && yTiro<yBI+130) {vidaInimigo--; shooting=false; startingShoot=true;}
+  if(enemyShooting) if(xTiroInimigo+40>xB && xTiroInimigo<xB+180 && yTiroInimigo+40>yB+75 && yTiroInimigo<yB+130) {vida--; enemyShooting=false; startingEnemyShoot=true;}
+  
+  //if(xTiro+40>xB && xTiro<xB+180 && yTiro+40>yB+75 && yTiro<yB+130) {vida--; shooting=false; startingShoot=true;}
+  //if(xTiroInimigo+40>xBI-180 && xTiroInimigo<xBI && yTiroInimigo+40>yBI+75 && yTiroInimigo<yBI+130) {vidaInimigo--; enemyShooting=false; startingEnemyShoot=true;}
+  
+  if(shooting && enemyShooting) if(xTiro+40>xTiroInimigo && xTiro<xTiroInimigo+40 && yTiro+40>yTiroInimigo && yTiro<yTiroInimigo+40) {vxTiro*=-1; vxTiroInimigo*=-1; temp=xTiroInimigo; xTiroInimigo=xTiro; xTiro=temp; temp=yTiro; yTiro=yTiroInimigo; yTiroInimigo=temp; temp=vxTiro; vxTiro=vxTiroInimigo; vxTiroInimigo=temp; temp=vyTiro; vyTiro=vyTiroInimigo; vyTiroInimigo=temp;}
 }
 void posiciona(){
     //tempoatual=millis();
@@ -145,10 +163,12 @@ void desenha(){
   background(150, 255, 255);
   if(VITORIA){
     JOGAR=false;
+    coins+=100;
     background(100, 250, 100);
   }
   if(DERROTA){
     JOGAR=false;
+    coins=0;
     background(250, 100, 100);
   }
   if(JOGAR){
@@ -159,9 +179,10 @@ void desenha(){
     //image(Mar, xM1, yM1);
     //tint(255, 175);
     image(Mar, xM, yM);
-    //tint(255, 255);
+    tint(255, 255);
     if(shooting) shoot();
     if(enemyShooting) enemyShoot();
+    colisoes();
     pushMatrix();
       translate(xB, yB);
       image(Barco, 0, 0);
@@ -184,7 +205,10 @@ void desenha(){
     
     fill(255-255*(vidaInimigo/vidaInimigoMax), 0+255*(vidaInimigo/vidaInimigoMax), 50);
     rect(xBI-190, yBI-10, 190*vidaInimigo/vidaInimigoMax, 10);
-    
+    String s = "Para voltar ao menu pressione M\nPara pausar e ver opções de upgrade pressione P\nCoins " + coins;
+    fill(50, 170, 30);  
+    textSize(20);
+    text(s, 1, 1, 1000, 1000);
     if(COLLIDERS){
       stroke(0,0,255);
       ellipse(xB, yB+130, 5, 5);
@@ -200,7 +224,6 @@ void desenha(){
     }
   }
   if(MENU){
-    if(!JOGAR){
       pushMatrix();
         image(Chuva, -250, -400);
         image(Mar, 0, 450);
@@ -210,7 +233,6 @@ void desenha(){
         scale(2);
         image(Barco, 0, 0);
       popMatrix();
-    }
     pushMatrix();
       translate(64, -64);
       scale(0.5);

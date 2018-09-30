@@ -7,12 +7,12 @@ float xN=0, vN = -1;
 float xM=0, vxM=-2, yM=445, vyM=-1, vMaxB=3;
 float xM1=-50,yM1=405, vyM1=2, vxM1=3;
 float xM2=-70, yM2=330, vyM2=-3, vxM2=4;
-float xB=0, yB=450, vxB=0;
+float xB=10, yB=450, vxB=0;
 float xBI=1600, yBI=450,  vxBI=-2;
 float k=0, s=0, es=10;
 float tempoatual=0, tempoanterior=0;
 int selecao=1;
-boolean JOGAR=false, MENU=true, PAUSE=true, COLLIDERS=false, VITORIA=false, DERROTA=false, JUST=false;
+boolean JOGAR=false, MENU=true, PAUSE=false, COLLIDERS=false, VITORIA=false, DERROTA=false, JUST=false;
 int shootDelay=100, enemyShootDelay=100;
 float xTiro, yTiro, xTiroInimigo, yTiroInimigo;
 float forcaTiro=1, forcaTiroInimigo=1;
@@ -183,14 +183,14 @@ void posiciona(){
     //tempoatual=millis();
     
     if(!PAUSE){
-      xC+=vC; xN+=vN; xM+=vxM; yM+=vyM; xB+=vxB; yB-=vyM; xM1+=vxM1; yM1+=vyM1; xM2+=vxM2; yM2+=vyM2; xBI+=vxBI; yBI-=vyM; k++; s++; es++; 
+      xC+=vC; xN+=vN; xM+=vxM; yM+=vyM; if(((xB>=0 && vxB<0) || (xB+180<=width && vxB>0))) xB+=vxB; yB-=vyM; xM1+=vxM1; yM1+=vyM1; xM2+=vxM2; yM2+=vyM2; xBI+=vxBI; yBI-=vyM; k++; s++; es++; 
       for(int i=0; i<drops.length; i++)drops[i].fall();
       if (keyPressed) {
           if (key == 'D' || key == 'd') {
-            if(vxB<vMaxB){vxB+=0.1;}
+            if(vxB<vMaxB){vxB+=0.3;}
           }
           if (key == 'A' || key == 'a') {
-            if(vxB>-vMaxB){vxB-=0.1;}
+            if(vxB>-vMaxB){vxB-=0.3;}
           }
       }
 
@@ -223,7 +223,7 @@ void desenha(){
       coins+=100;
       vxInicialTiroInimigo-=0.5;
       if(vyInicialTiroInimigo>8) vyInicialTiroInimigo+=0.5;
-      xB=0;
+      xB=10; vxB=0;
       vida=vidaMax;
       JUST=false;
       vidaInimigoMax+=1;

@@ -183,7 +183,7 @@ void posiciona(){
     //tempoatual=millis();
     
     if(!PAUSE){
-      xC+=vC; xN+=vN; xM+=vxM; yM+=vyM; if(((xB>=0 && vxB<0) || (xB+180<=width && vxB>0))) xB+=vxB; yB-=vyM; xM1+=vxM1; yM1+=vyM1; xM2+=vxM2; yM2+=vyM2; xBI+=vxBI; yBI-=vyM; k++; s++; es++; 
+      xC+=vC; xN+=vN; xM+=vxM; yM+=vyM; if(((xB>=0 && vxB<0) || (xB+180<=width && vxB>0))) xB+=vxB; if(xB<=0 || xB>=width) vxB=0; yB-=vyM; xM1+=vxM1; yM1+=vyM1; xM2+=vxM2; yM2+=vyM2; xBI+=vxBI; yBI-=vyM; k++; s++; es++; 
       for(int i=0; i<drops.length; i++)drops[i].fall();
       if (keyPressed) {
           if (key == 'D' || key == 'd') {
